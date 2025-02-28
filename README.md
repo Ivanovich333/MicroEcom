@@ -1,13 +1,19 @@
 # MicroEcom
 
-A microservices-based e-commerce platform built with FastAPI and designed for serverless environments.
+MicroEcom is a microservices-based e-commerce platform built with FastAPI, designed for serverless environments and high scalability. Each service is containerized for easy deployment and management.
 
 ## Project Structure
 
-- `/services`: Contains all microservices
-  - `/api`: Main API service
-- `/docs`: Project documentation
-- `/scripts`: Utility scripts for development and deployment
+- **services/** - Contains all microservices
+  - **user/** - User Management Microservice
+    - User registration, authentication, and profile management
+  - **product/** - Product Catalog Microservice
+  - **cart/** - Shopping Cart Microservice
+  - **order/** - Order Management Microservice
+  - **payment/** - Payment Processing Microservice
+  - **gateway/** - API Gateway for service orchestration
+- **docs/** - Documentation
+- **scripts/** - Utility scripts
 
 ## Getting Started
 
@@ -19,13 +25,6 @@ A microservices-based e-commerce platform built with FastAPI and designed for se
 ### Running Locally
 
 1. Clone the repository
-2. Run with Docker Compose:
-   ```
-   docker-compose up
-   ```
-3. The API will be available at `http://localhost:8000`
-4. Access the API documentation at `http://localhost:8000/docs`
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details. 
+2. Run `docker-compose up -d`
+3. Access the API at http://localhost:8000
+4. Access the documentation at http://localhost:8000/docs

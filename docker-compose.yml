@@ -9,4 +9,40 @@ services:
       - ./services/api:/app
     environment:
       - ENVIRONMENT=development
-    restart: unless-stopped 
+    restart: unless-stopped
+    depends_on:
+      - user
+
+  user:
+    build:
+      context: ./services/user
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./services/user:/app
+    environment:
+      - ENVIRONMENT=development
+      - POSTGRES_SERVER=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=user_db
+      - POSTGRES_PORT=5432
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=user_db
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+volumes:
+  postgres_data: 
