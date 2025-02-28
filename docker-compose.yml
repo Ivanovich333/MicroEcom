@@ -1,0 +1,12 @@
+services:
+  api:
+    build:
+      context: ./services/api
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./services/api:/app
+    environment:
+      - ENVIRONMENT=development
+    restart: unless-stopped 
