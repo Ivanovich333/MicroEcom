@@ -4,58 +4,82 @@ This microservice handles user registration, authentication, and profile managem
 
 ## Features
 
-- User registration with email and username validation
+- User registration with email validation
 - Secure password hashing with bcrypt
 - JWT-based authentication
 - User profile management
-- PostgreSQL database integration
+- PostgreSQL integration
+- RESTful API
+- FastAPI framework
+- Pydantic data validation
+- SQLAlchemy ORM
 - Alembic migrations
-- Input validation with Pydantic
-- Email validation with email-validator
+- Docker containerization
+- Health check endpoint
 
 ## API Endpoints
 
-### User Authentication
+| Method | URL | Description |
+| ------ | --- | ----------- |
+| GET | /api/v1/health | Check service health |
+| POST | /api/v1/register | Register a new user |
+| POST | /api/v1/login/access-token | Login and get access token |
+| GET | /api/v1/me | Get current user profile |
+| PUT | /api/v1/me | Update current user profile |
+| GET | /api/v1/users/{user_id} | Get user by ID (admin only) |
 
-- `POST /api/v1/register` - Register a new user
-  ```json
-  {
-    "email": "user@example.com",
-    "username": "username",
-    "password": "password123",
-    "full_name": "Full Name"
-  }
-  ```
+## Development
 
-- `POST /api/v1/login/access-token` - Login and get access token
-  ```
-  Form data:
-  username: user@example.com
-  password: password123
-  ```
+### Prerequisites
 
-### User Profile Management
+- Python 3.9+
+- Docker and Docker Compose (for containerized development)
+- PostgreSQL (for local development without Docker)
 
-- `GET /api/v1/me` - Get current user profile
-  ```
-  Header:
-  Authorization: Bearer {access_token}
-  ```
+### Local Development
 
-- `PUT /api/v1/me` - Update current user profile
-  ```json
-  {
-    "full_name": "Updated Name"
-  }
-  ```
+1. Create a virtual environment: `python -m venv venv`
+2. Activate the virtual environment: `source venv/bin/activate` (Linux/Mac) or `venv\Scripts\activate` (Windows)
+3. Install dependencies: `pip install -r requirements.txt`
+4. Set environment variables (see below)
+5. Run migrations: `alembic upgrade head`
+6. Run the application: `uvicorn app.main:app --reload --host 0.0.0.0 --port 8001`
 
-### Admin Access
+### Using Docker
 
-- `GET /api/v1/users/{user_id}` - Get user by ID (requires admin privileges or to be the same user)
+1. Build the image: `docker build -t user-service .`
+2. Run the container: `docker run -p 8001:8001 user-service`
 
-### Service Health
+### Using Docker Compose
 
-- `GET /api/v1/health` - Health check endpoint
+Run `docker-compose up -d` from the root of the project to start all services including this one.
+
+### Testing
+
+The service includes comprehensive tests using pytest:
+
+```bash
+# Run tests within the Docker container
+docker-compose exec user python -m pytest
+
+# Run tests locally
+python -m pytest
+```
+
+The tests cover authentication, user registration, and profile management endpoints.
+
+## Environment Variables
+
+| Variable | Description | Default |
+| -------- | ----------- | ------- |
+| DATABASE_USER | PostgreSQL username | postgres |
+| DATABASE_PASSWORD | PostgreSQL password | postgres |
+| DATABASE_HOST | PostgreSQL host | postgres |
+| DATABASE_PORT | PostgreSQL port | 5432 |
+| DATABASE_NAME | PostgreSQL database name | user_db |
+| SECRET_KEY | Secret key for JWT token generation | None |
+| ACCESS_TOKEN_EXPIRE_MINUTES | Token expiration time in minutes | 60 |
+| SERVICE_NAME | Service name for health checks | user |
 
 ## Architecture
 
@@ -80,55 +104,6 @@ The User model includes:
 - is_superuser: Whether the user has admin privileges
 - created_at: Timestamp of account creation
 - updated_at: Timestamp of last account update
-
-## Development
-
-### Setup
-
-1. Install dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
-
-2. Set up environment variables (or create a .env file):
-   ```
-   POSTGRES_SERVER=localhost
-   POSTGRES_USER=postgres
-   POSTGRES_PASSWORD=postgres
-   POSTGRES_DB=user_db
-   POSTGRES_PORT=5432
-   SECRET_KEY=yoursecretkey
-   ```
-
-3. Run migrations:
-   ```
-   alembic upgrade head
-   ```
-
-4. Start the service:
-   ```
-   uvicorn main:app --reload --port 8001
-   ```
-
-### Testing
-
-Run tests with pytest:
-```
-pytest app/tests
-```
-
-## Docker
-
-Build and run with Docker:
-```
-docker build -t user-service .
-docker run -p 8001:8001 user-service
-```
-
-Or use docker-compose:
-```
-docker-compose up -d
-```
 
 ## Recent Updates
 
