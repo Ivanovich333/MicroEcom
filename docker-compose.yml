@@ -12,6 +12,7 @@ services:
     restart: unless-stopped
     depends_on:
       - user
+      - product
 
   user:
     build:
@@ -23,19 +24,40 @@ services:
       - ./services/user:/app
     environment:
       - ENVIRONMENT=development
-      - POSTGRES_SERVER=postgres
+      - POSTGRES_SERVER=postgres_user
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=user_db
       - POSTGRES_PORT=5432
     depends_on:
-      - postgres
+      postgres_user:
+        condition: service_healthy
     restart: unless-stopped
 
-  postgres:
+  product:
+    build:
+      context: ./services/product
+      dockerfile: Dockerfile
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./services/product:/app
+    environment:
+      - ENVIRONMENT=development
+      - POSTGRES_SERVER=postgres_product
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=product_db
+      - POSTGRES_PORT=5432
+    depends_on:
+      postgres_product:
+        condition: service_healthy
+    restart: unless-stopped
+
+  postgres_user:
     image: postgres:15-alpine
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_user_data:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
@@ -43,6 +65,29 @@ services:
     ports:
       - "5432:5432"
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  postgres_product:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_product_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=product_db
+    ports:
+      - "5433:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
-  postgres_data: 
+  postgres_user_data:
+  postgres_product_data: 
