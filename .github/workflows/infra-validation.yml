@@ -1,0 +1,80 @@
+name: Infrastructure Validation
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'docker-compose.yml'
+      - 'services/*/Dockerfile*'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'docker-compose.yml'
+      - 'services/*/Dockerfile*'
+
+jobs:
+  validate-docker-compose:
+    name: Validate Docker Compose
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Install Docker Compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/download/v2.17.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+      
+      - name: Validate docker-compose.yml
+        run: docker-compose config -q
+  
+  validate-dockerfiles:
+    name: Validate Dockerfiles
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [user, product, order, api]
+        include:
+          - service: order
+            extra_dockerfile: Dockerfile.celery
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Lint Dockerfile
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: services/${{ matrix.service }}/Dockerfile
+          failure-threshold: error
+      
+      - name: Lint extra Dockerfile (if applicable)
+        if: matrix.extra_dockerfile != ''
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: services/${{ matrix.service }}/${{ matrix.extra_dockerfile }}
+          failure-threshold: error
+  
+  test-docker-build:
+    name: Test Docker Build
+    runs-on: ubuntu-latest
+    needs: [validate-docker-compose, validate-dockerfiles]
+    strategy:
+      matrix:
+        service: [user, product, order, api]
+        include:
+          - service: order
+            extra_dockerfile: Dockerfile.celery
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ matrix.service }}:test ./services/${{ matrix.service }}
+          echo "Successfully built ${{ matrix.service }}:test"
+      
+      - name: Build extra Docker image (if applicable)
+        if: matrix.extra_dockerfile != ''
+        run: |
+          docker build -t ${{ matrix.service }}_worker:test -f ./services/${{ matrix.service }}/${{ matrix.extra_dockerfile }} ./services/${{ matrix.service }}
+          echo "Successfully built ${{ matrix.service }}_worker:test" 

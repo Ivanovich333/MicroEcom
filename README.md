@@ -16,6 +16,7 @@ MicroEcom is a microservices-based e-commerce platform built with FastAPI, desig
     - **order/** - Order Management Microservice
     - **payment/** - Payment Processing Microservice
 - **docs/** - Documentation
+- **.github/workflows/** - CI/CD pipeline configuration
 
 ## Architecture
 
@@ -24,7 +25,7 @@ MicroEcom is a microservices-based e-commerce platform built with FastAPI, desig
 - **API-First Design**: Well-documented RESTful APIs with OpenAPI/Swagger
 - **Health Checks**: Each service has a health endpoint for monitoring
 - **Containerization**: Docker for consistent development and deployment
-- **CI/CD Ready**: Designed for easy integration with CI/CD pipelines
+- **CI/CD Pipeline**: Automated testing, building, and deployment with GitHub Actions
 
 ## Getting Started
 
@@ -45,6 +46,22 @@ MicroEcom is a microservices-based e-commerce platform built with FastAPI, desig
    - User Service: http://localhost:8001/docs
    - Product Service: http://localhost:8002/docs
 
+### Setting Up Development Environment
+
+1. Install Git hooks for code quality checks:
+   ```bash
+   ./.github/install-hooks.sh
+   ```
+   This will install pre-commit hooks that run linting and tests before each commit.
+
+2. Install development dependencies for each service:
+   ```bash
+   cd services/user && pip install -r requirements.txt
+   cd services/product && pip install -r requirements.txt
+   cd services/order && pip install -r requirements.txt
+   cd services/api && pip install -r requirements.txt
+   ```
+
 ## Testing
 
 Each service includes its own test suite using pytest. The tests can be run within the Docker containers:
@@ -54,8 +71,61 @@ docker-compose exec product python -m pytest
 docker-compose exec user python -m pytest
 ```
 
+Or locally:
+
+```bash
+cd services/user && python -m pytest
+cd services/product && python -m pytest
+```
+
 ## Database Management
 
 The system uses PostgreSQL with separate databases for each service:
 - User DB: Port 5432
 - Product DB: Port 5433
+
+## CI/CD Pipeline
+
+The project includes a comprehensive CI/CD pipeline implemented with GitHub Actions:
+
+### Workflow Files
+
+- **ci-cd.yml**: Main workflow for linting, testing, building, and deploying
+- **security-scan.yml**: Security scanning for dependencies, code, and container images
+- **infra-validation.yml**: Infrastructure validation for Docker Compose and Dockerfiles
+
+### Pipeline Stages
+
+1. **Lint**: Code quality checks with flake8, black, and isort
+2. **Test**: Run unit and integration tests with pytest
+3. **Build**: Build Docker images and push to GitHub Container Registry
+4. **Security Scan**: Check for vulnerabilities in dependencies and code
+5. **Deploy**: Deploy to staging or production environments
+
+### Environment Deployments
+
+- Pushes to `develop` branch deploy to the staging environment
+- Pushes to `main` branch deploy to the production environment
+
+### Status Badges
+
+[![CI/CD Pipeline](https://github.com/yourusername/MicroEcom/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/yourusername/MicroEcom/actions/workflows/ci-cd.yml)
+[![Security Scan](https://github.com/yourusername/MicroEcom/actions/workflows/security-scan.yml/badge.svg)](https://github.com/yourusername/MicroEcom/actions/workflows/security-scan.yml)
+[![Infrastructure Validation](https://github.com/yourusername/MicroEcom/actions/workflows/infra-validation.yml/badge.svg)](https://github.com/yourusername/MicroEcom/actions/workflows/infra-validation.yml)
+
+### Using the CI/CD Pipeline
+
+1. **For Developers**:
+   - Create a feature branch from `develop`
+   - Make changes and push to GitHub
+   - Create a pull request to `develop`
+   - CI pipeline will run automatically
+   - After approval and merge, changes will be deployed to staging
+
+2. **For Release Managers**:
+   - Create a pull request from `develop` to `main`
+   - After approval and merge, changes will be deployed to production
+
+## Documentation
+
+For more detailed information about the CI/CD pipeline, see [CI/CD Pipeline Documentation](docs/ci-cd-pipeline.md).
