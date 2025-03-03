@@ -13,6 +13,7 @@ services:
     depends_on:
       - user
       - product
+      - order
 
   user:
     build:
@@ -54,6 +55,54 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  order:
+    build:
+      context: ./services/order
+      dockerfile: Dockerfile
+    ports:
+      - "8003:8003"
+    volumes:
+      - ./services/order:/app
+    environment:
+      - ENVIRONMENT=development
+      - POSTGRES_SERVER=postgres_order
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=order_db
+      - POSTGRES_PORT=5432
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_BACKEND_URL=redis://redis:6379/0
+      - USER_SERVICE_URL=http://user:8001
+      - PRODUCT_SERVICE_URL=http://product:8002
+    depends_on:
+      postgres_order:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+
+  order_worker:
+    build:
+      context: ./services/order
+      dockerfile: Dockerfile.celery
+    volumes:
+      - ./services/order:/app
+    environment:
+      - ENVIRONMENT=development
+      - POSTGRES_SERVER=postgres_order
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=order_db
+      - POSTGRES_PORT=5432
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_BACKEND_URL=redis://redis:6379/0
+      - USER_SERVICE_URL=http://user:8001
+      - PRODUCT_SERVICE_URL=http://product:8002
+    depends_on:
+      - order
+      - redis
+    restart: unless-stopped
+
   postgres_user:
     image: postgres:15-alpine
     volumes:
@@ -88,6 +137,34 @@ services:
       timeout: 5s
       retries: 5
 
+  postgres_order:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_order_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=order_db
+      - POSTGRES_HOST_AUTH_METHOD=md5
+    ports:
+      - "5434:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
 volumes:
   postgres_user_data:
-  postgres_product_data: 
+  postgres_product_data:
+  postgres_order_data:
+  redis_data: 
