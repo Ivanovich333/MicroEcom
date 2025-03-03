@@ -46,21 +46,16 @@ MicroEcom is a microservices-based e-commerce platform built with FastAPI, desig
    - User Service: http://localhost:8001/docs
    - Product Service: http://localhost:8002/docs
 
-### Setting Up Development Environment
+### Development Environment Setup
 
-1. Install Git hooks for code quality checks:
-   ```bash
-   ./.github/install-hooks.sh
-   ```
-   This will install pre-commit hooks that run linting and tests before each commit.
+To set up your development environment, install the dependencies for the services you're working on:
 
-2. Install development dependencies for each service:
-   ```bash
-   cd services/user && pip install -r requirements.txt
-   cd services/product && pip install -r requirements.txt
-   cd services/order && pip install -r requirements.txt
-   cd services/api && pip install -r requirements.txt
-   ```
+```bash
+cd services/user && pip install -r requirements.txt
+cd services/product && pip install -r requirements.txt
+cd services/order && pip install -r requirements.txt
+cd services/api && pip install -r requirements.txt
+```
 
 ## Testing
 

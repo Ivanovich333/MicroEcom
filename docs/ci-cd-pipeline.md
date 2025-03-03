@@ -141,7 +141,7 @@ Status badges are available for each workflow:
 4. **Testing**:
    - Write tests for new features and bug fixes
    - Aim for high test coverage
-   - Run tests locally before pushing
+   - Run tests locally using pytest before pushing
 
 5. **Security**:
    - Address security issues identified by the security scan
@@ -153,8 +153,8 @@ Status badges are available for each workflow:
 ### Common Issues
 
 1. **Lint Failures**:
-   - Run linting tools locally to fix issues before pushing
-   - Use pre-commit hooks to automate linting
+   - Run linting tools locally (flake8, black, isort) to fix issues before pushing
+   - Consider setting up your IDE to format code automatically
 
 2. **Test Failures**:
    - Check test logs in GitHub Actions for details
